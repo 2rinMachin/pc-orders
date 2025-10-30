@@ -1,0 +1,5 @@
+.venv/
+.direnv/
+.cache/
+__pycache__/
+.env
