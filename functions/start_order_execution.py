@@ -1,18 +1,22 @@
+import os
+
 import boto3
 
+from common import table_name
 from schemas import Order
+
+SFN_ARN = os.environ["AWS_SFN_ARN"]
 
 sfn = boto3.client("stepfunctions")
 dynamodb = boto3.resource("dynamodb")
-orders = dynamodb.Table("pc-orders")
+orders = dynamodb.Table(table_name("orders"))
 
 
 def handler(event, context):
     order = Order(**event["detail"])
 
-    # TODO: use environment variable
     execution = sfn.start_execution(
-        stateMachineArn="arn:aws:states:us-east-1:603103502342:stateMachine:pc-order-workflow",
+        stateMachineArn=SFN_ARN,
         input=order.model_dump_json(),
     )
 

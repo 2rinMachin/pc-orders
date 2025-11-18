@@ -4,18 +4,17 @@ import boto3
 from boto3.dynamodb.conditions import Key
 from pydantic import BaseModel
 
-from common import parse_body, response
-from schemas import OrderSubscription
+from common import parse_body, response, table_name
+from schemas import OrderSubscription, WebSocketMessage, WebSocketMessageKind
 
 
 class SubscribeRequest(BaseModel):
-    action: str
     tenant_id: str
     order_id: Optional[str]
 
 
 dynamodb = boto3.resource("dynamodb")
-subscriptions = dynamodb.Table("pc-order-subscriptions")
+subscriptions = dynamodb.Table(table_name("ws-order-subscriptions"))
 
 
 def handler(event, context):
@@ -35,7 +34,11 @@ def handler(event, context):
     )
 
     if resp["Count"] > 0:
-        return response(200, {"message": "Already subscribed."})
+        res = WebSocketMessage(
+            kind=WebSocketMessageKind.subscription_failed,
+            data={"message": "Already subscribed."},
+        )
+        return response(407, res)
 
     new_subscription = OrderSubscription(
         tenant_id=data.tenant_id,
@@ -46,4 +49,8 @@ def handler(event, context):
 
     subscriptions.put_item(Item=new_subscription.model_dump())
 
-    return response(200, {"message": "Subscribed."})
+    res = WebSocketMessage(
+        kind=WebSocketMessageKind.subscription_success,
+        data={"message": "Subscribed."},
+    )
+    return response(200, res)

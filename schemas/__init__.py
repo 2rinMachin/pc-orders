@@ -38,3 +38,15 @@ class OrderSubscription(BaseModel):
     order_id: Optional[str] = None
     connection_id: str
     connected_at: int
+
+
+class WebSocketMessageKind(str, Enum):
+    subscription_success = "subscription_success"
+    subscription_failed = "subscription_failed"
+    order_created = "order_created"
+    order_status_updated = "order_status_updated"
+
+
+class WebSocketMessage(BaseModel):
+    kind: WebSocketMessageKind
+    data: dict

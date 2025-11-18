@@ -1,8 +1,17 @@
 import json
+import os
 from decimal import Decimal
 from typing import Any, TypeVar
 
 from pydantic import BaseModel, ValidationError
+
+PROJECT_NAME = os.environ["PROJECT_NAME"]
+STAGE = os.environ["STAGE"]
+
+
+def table_name(basename: str) -> str:
+    return f"{PROJECT_NAME}-{STAGE}-{basename}"
+
 
 T = TypeVar("T", bound=BaseModel)
 
@@ -19,7 +28,9 @@ def response(status_code: int, body: Any):
     raw_body = None
 
     if body != None:
-        if type(body) == str:
+        if isinstance(body, BaseModel):
+            raw_body = body.model_dump_json()
+        elif type(body) == str:
             raw_body = body
         else:
             raw_body = to_json(body)

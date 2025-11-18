@@ -1,5 +1,3 @@
-import os
-
 import boto3
 from boto3.dynamodb.conditions import Attr, Key
 
@@ -16,7 +14,7 @@ def handler(event, context):
     order = Order(**event["detail"])
 
     message = WebSocketMessage(
-        kind=WebSocketMessageKind.order_status_updated,
+        kind=WebSocketMessageKind.order_created,
         data=order.model_dump(),
     )
     message_data = message.model_dump_json()

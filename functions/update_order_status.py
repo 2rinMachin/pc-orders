@@ -1,7 +1,7 @@
 import boto3
 from pydantic import BaseModel
 
-from common import parse_body, response, to_json
+from common import PROJECT_NAME, parse_body, response, table_name, to_json
 from schemas import Order, OrderStatus
 
 dynamodb = boto3.resource("dynamodb")
@@ -31,7 +31,7 @@ def handler(event, context):
 
     assert data != None
 
-    orders = dynamodb.Table("pc-orders")
+    orders = dynamodb.Table(table_name("orders"))
 
     resp = orders.get_item(Key={"tenant_id": tenant_id, "order_id": order_id})
     item: dict | None = resp.get("Item")
@@ -69,8 +69,8 @@ def handler(event, context):
     event_bridge.put_events(
         Entries=[
             {
-                "Source": "pc.orders",
-                "DetailType": "order.status_update",
+                "Source": f"{PROJECT_NAME}.orders",
+                "DetailType": "order.status_updated",
                 "Detail": to_json(new_order),
             }
         ]

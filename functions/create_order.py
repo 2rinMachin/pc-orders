@@ -3,7 +3,7 @@ import uuid
 import boto3
 from pydantic import BaseModel
 
-from common import parse_body, response, to_json
+from common import PROJECT_NAME, parse_body, response, table_name, to_json
 from schemas import Order, OrderItem, OrderStatus
 
 
@@ -29,7 +29,7 @@ def handler(event, context):
         return response(400, {"message": "Order must have at least 1 item."})
 
     dynamodb = boto3.resource("dynamodb")
-    orders = dynamodb.Table("pc-orders")
+    orders = dynamodb.Table(table_name("orders"))
 
     new_order = Order(
         tenant_id=tenant_id,
@@ -52,7 +52,7 @@ def handler(event, context):
     events.put_events(
         Entries=[
             {
-                "Source": "pc.orders",
+                "Source": f"{PROJECT_NAME}.orders",
                 "DetailType": "order.created",
                 "Detail": to_json(new_order_dict),
             }

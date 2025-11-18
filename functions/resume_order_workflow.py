@@ -1,7 +1,7 @@
 import boto3
 from pydantic import BaseModel
 
-from common import to_json
+from common import table_name, to_json
 from schemas import Order
 
 
@@ -14,7 +14,7 @@ def handler(event, context):
     data = ResumeOrderWorkflowEvent(**event["detail"])
 
     dynamodb = boto3.resource("dynamodb")
-    orders = dynamodb.Table("pc-orders")
+    orders = dynamodb.Table(table_name("orders"))
 
     resp = orders.get_item(Key={"tenant_id": data.tenant_id, "order_id": data.order_id})
     item: dict | None = resp.get("Item")

@@ -2,10 +2,11 @@ import boto3
 from boto3.dynamodb.conditions import Key
 from pydantic import ValidationError
 
+from common import table_name
 from schemas import OrderSubscription
 
 dynamodb = boto3.resource("dynamodb")
-subscriptions = dynamodb.Table("pc-order-subscriptions")
+subscriptions = dynamodb.Table(table_name("ws-order-subscriptions"))
 
 
 def handler(event, context):

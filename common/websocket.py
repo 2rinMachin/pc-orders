@@ -1,0 +1,6 @@
+import os
+
+APIGW_DOMAIN = os.environ["AWS_APIGW_DOMAIN"]
+APIGW_STAGE = os.environ["AWS_APIGW_STAGE"]
+
+WEBSOCKET_ENDPOINT = f"https://{APIGW_DOMAIN}/{APIGW_STAGE}"

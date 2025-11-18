@@ -1,28 +1,82 @@
-service: "pc-orders"
+service: "${env:PROJECT_NAME}-orders"
+
+params:
+  dev:
+    domain_rest: "${env:PROJECT_NAME}-dev-orders.unilife.lat"
+    domain_ws: "${env:PROJECT_NAME}-dev-websocket.unilife.lat"
+  prod:
+    domain_rest: "${env:PROJECT_NAME}-orders.unilife.lat"
+    domain_ws: "${env:PROJECT_NAME}-websocket.unilife.lat"
 
 provider:
   name: "aws"
-  runtime: "python3.11"
+  runtime: "python3.13"
   memorySize: 512
   timeout: 20
   iam:
     role: "arn:aws:iam::${env:AWS_USER_ID}:role/LabRole"
+  environment:
+    PROJECT_NAME: "${env:PROJECT_NAME}"
+    STAGE: "${env:STAGE}"
+    AWS_APIGW_DOMAIN: "${env:AWS_APIGW_DOMAIN}"
+    AWS_APIGW_STAGE: "${env:AWS_APIGW_STAGE}"
+    AWS_SFN_ARN: "${env:AWS_SFN_ARN}"
+  domains:
+    - name: "${param:domain_rest}"
+      apiType: "httpApi"
+      certificateArn: "${env:AWS_ACM_CERTIFICATE_ARN}"
+      createRoute53Record: false
+    - name: "${param:domain_ws}"
+      apiType: "websocket"
+      certificateArn: "${env:AWS_ACM_CERTIFICATE_ARN}"
+      createRoute53Record: false
 
-plugins:
-  - "serverless-python-requirements"
+custom:
+  pythonRequirements: {}
 
 functions:
   put_order_task_token:
     handler: "functions/put_order_task_token.handler"
 
-  resume_order_workflow:
-    handler: "functions/resume_order_workflow.handler"
-
   start_order_execution:
     handler: "functions/start_order_execution.handler"
+    events:
+      - eventBridge:
+          pattern:
+            source: ["${env:PROJECT_NAME}.orders"]
+            detail-type: ["order.created"]
+
+  resume_order_workflow:
+    handler: "functions/resume_order_workflow.handler"
+    events:
+      - eventBridge:
+          pattern:
+            source: ["${env:PROJECT_NAME}.orders"]
+            detail-type: ["order.status_updated"]
+
+  broadcast_order_created:
+    handler: "functions/websocket/broadcast_order_created.handler"
+    events:
+      - eventBridge:
+          pattern:
+            source: ["${env:PROJECT_NAME}.orders"]
+            detail-type: ["order.created"]
 
   broadcast_order_status:
     handler: "functions/websocket/broadcast_order_status.handler"
+    events:
+      - eventBridge:
+          pattern:
+            source: ["${env:PROJECT_NAME}.orders"]
+            detail-type: ["order.status_updated"]
+
+  get_status:
+    handler: "functions/get_status.handler"
+    events:
+      - http:
+          path: "/"
+          method: "get"
+          cors: true
 
   get_orders:
     handler: "functions/get_orders.handler"
