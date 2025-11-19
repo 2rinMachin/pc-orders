@@ -36,7 +36,7 @@ def handler(event, context):
         order_id=str(uuid.uuid4()),
         items=[
             OrderItem(
-                item_id=item.item_id,
+                product_id=item.item_id,
                 quantity=item.quantity,
             )
             for item in data.items

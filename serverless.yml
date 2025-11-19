@@ -1,13 +1,5 @@
 service: "${env:PROJECT_NAME}-orders"
 
-params:
-  dev:
-    domain_rest: "${env:PROJECT_NAME}-dev-orders.unilife.lat"
-    domain_ws: "${env:PROJECT_NAME}-dev-websocket.unilife.lat"
-  prod:
-    domain_rest: "${env:PROJECT_NAME}-orders.unilife.lat"
-    domain_ws: "${env:PROJECT_NAME}-websocket.unilife.lat"
-
 provider:
   name: "aws"
   runtime: "python3.13"
@@ -21,15 +13,6 @@ provider:
     AWS_APIGW_DOMAIN: "${env:AWS_APIGW_DOMAIN}"
     AWS_APIGW_STAGE: "${env:AWS_APIGW_STAGE}"
     AWS_SFN_ARN: "${env:AWS_SFN_ARN}"
-  domains:
-    - name: "${param:domain_rest}"
-      apiType: "httpApi"
-      certificateArn: "${env:AWS_ACM_CERTIFICATE_ARN}"
-      createRoute53Record: false
-    - name: "${param:domain_ws}"
-      apiType: "websocket"
-      certificateArn: "${env:AWS_ACM_CERTIFICATE_ARN}"
-      createRoute53Record: false
 
 custom:
   pythonRequirements: {}
@@ -85,6 +68,11 @@ functions:
           path: "/{tenant_id}/orders"
           method: "get"
           cors: true
+          authorizer:
+            arn: "${env:AWS_AUTHENTICATE_USER_ARN}"
+            type: "request"
+            identitySource: "method.request.header.Authorization"
+            resultTtlInSeconds: 0
 
   get_order:
     handler: "functions/get_order.handler"
@@ -93,6 +81,11 @@ functions:
           path: "/{tenant_id}/orders/{order_id}"
           method: "get"
           cors: true
+          authorizer:
+            arn: "${env:AWS_AUTHENTICATE_USER_ARN}"
+            type: "request"
+            identitySource: "method.request.header.Authorization"
+            resultTtlInSeconds: 0
 
   create_order:
     handler: "functions/create_order.handler"
@@ -101,6 +94,11 @@ functions:
           path: "/{tenant_id}/orders"
           method: "post"
           cors: true
+          authorizer:
+            arn: "${env:AWS_AUTHENTICATE_USER_ARN}"
+            type: "request"
+            identitySource: "method.request.header.Authorization"
+            resultTtlInSeconds: 0
 
   update_order_status:
     handler: "functions/update_order_status.handler"
@@ -109,6 +107,11 @@ functions:
           path: "/{tenant_id}/orders/{order_id}/status"
           method: "patch"
           cors: true
+          authorizer:
+            arn: "${env:AWS_AUTHENTICATE_USER_ARN}"
+            type: "request"
+            identitySource: "method.request.header.Authorization"
+            resultTtlInSeconds: 0
 
   websocket_connect:
     handler: "functions/websocket/connect.handler"
