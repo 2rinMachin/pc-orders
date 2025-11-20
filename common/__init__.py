@@ -1,7 +1,7 @@
 import json
 import os
 from decimal import Decimal
-from typing import Any, TypeVar
+from typing import Any
 
 from pydantic import BaseModel, ValidationError
 
@@ -13,10 +13,7 @@ def table_name(basename: str) -> str:
     return f"{PROJECT_NAME}-{STAGE}-{basename}"
 
 
-T = TypeVar("T", bound=BaseModel)
-
-
-def parse_body(model: type[T], event: dict):
+def parse_body[T](model: type[T], event: dict):
     try:
         body = json.loads(event["body"])
         return model(**body), None
