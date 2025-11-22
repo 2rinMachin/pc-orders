@@ -38,7 +38,7 @@ def handler(event, context):
             kind=WebSocketMessageKind.subscription_failed,
             data={"message": "Already subscribed."},
         )
-        return response(407, res)
+        return response(409, res)
 
     new_subscription = OrderSubscription(
         tenant_id=data.tenant_id,

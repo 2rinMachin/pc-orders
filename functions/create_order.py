@@ -8,7 +8,7 @@ from schemas import Order, OrderItem, OrderStatus
 
 
 class CreateOrderRequestItem(BaseModel):
-    item_id: str
+    product_id: str
     quantity: int
 
 
@@ -36,7 +36,7 @@ def handler(event, context):
         order_id=str(uuid.uuid4()),
         items=[
             OrderItem(
-                product_id=item.item_id,
+                product_id=item.product_id,
                 quantity=item.quantity,
             )
             for item in data.items
@@ -44,9 +44,7 @@ def handler(event, context):
         status=OrderStatus.wait_for_cook,
     )
 
-    new_order_dict = new_order.model_dump()
-
-    orders.put_item(Item=new_order_dict)
+    orders.put_item(Item=new_order.model_dump())
 
     events = boto3.client("events")
     events.put_events(
@@ -54,9 +52,9 @@ def handler(event, context):
             {
                 "Source": f"{PROJECT_NAME}.orders",
                 "DetailType": "order.created",
-                "Detail": to_json(new_order_dict),
+                "Detail": new_order.model_dump_json(),
             }
         ]
     )
 
-    return response(201, new_order_dict)
+    return response(201, new_order.model_dump_json())
