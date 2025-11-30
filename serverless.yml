@@ -18,6 +18,19 @@ custom:
   pythonRequirements: {}
 
 functions:
+  get_statistics:
+    handler: "functions/get_statistics.handler"
+    events:
+      - http:
+          path: "/{tenant_id}/statistics"
+          method: "get"
+          cors: true
+          authorizer:
+            arn: "${env:AWS_AUTHENTICATE_USER_ARN}"
+            type: "request"
+            identitySource: "method.request.header.Authorization"
+            resultTtlInSeconds: 0
+
   put_order_task_token:
     handler: "functions/put_order_task_token.handler"
 

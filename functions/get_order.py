@@ -22,7 +22,6 @@ def handler(event, context):
     order = FullOrder(**item)
 
     if order.execution_arn != None:
-        order.execution = sfn.describe_execution(executionArn=order.execution_arn)
         order.execution_history = sfn.get_execution_history(
             executionArn=order.execution_arn
         )

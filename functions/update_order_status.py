@@ -1,8 +1,10 @@
+from datetime import datetime, timezone
+
 import boto3
 from pydantic import BaseModel
 
 from common import PROJECT_NAME, parse_body, response, table_name, to_json
-from schemas import Order, OrderStatus
+from schemas import AuthorizedUser, Order, OrderHistoryEntry, OrderStatus, UserRole
 
 dynamodb = boto3.resource("dynamodb")
 event_bridge = boto3.client("events")
@@ -14,6 +16,16 @@ STATUS_REQUIREMENTS = {
     OrderStatus.wait_for_deliverer: OrderStatus.dispatching,
     OrderStatus.delivering: OrderStatus.wait_for_deliverer,
     OrderStatus.complete: OrderStatus.delivering,
+}
+
+
+ROLE_REQUIREMENTS = {
+    OrderStatus.cooking: UserRole.cook,
+    OrderStatus.wait_for_dispatcher: UserRole.cook,
+    OrderStatus.dispatching: UserRole.dispatcher,
+    OrderStatus.wait_for_deliverer: UserRole.dispatcher,
+    OrderStatus.delivering: UserRole.driver,
+    OrderStatus.complete: UserRole.driver,
 }
 
 
@@ -39,9 +51,15 @@ def handler(event, context):
     if item == None:
         return response(404, {"message": "Order not found."})
 
+    user = AuthorizedUser(**event["requestContext"]["authorizer"])
     order = Order(**item)
 
     required_status = STATUS_REQUIREMENTS.get(data.status)
+    required_role = ROLE_REQUIREMENTS.get(data.status)
+
+    # TODO: uncomment when ready
+    # if required_role != None and required_role != user.role:
+    #     return response(403, {"message": "Forbidden."})
 
     if required_status == None:
         return response(
@@ -56,11 +74,52 @@ def handler(event, context):
             },
         )
 
+    if data.status == OrderStatus.cooking:
+        orders.update_item(
+            Key={"tenant_id": tenant_id, "order_id": order_id},
+            UpdateExpression="SET cook = :cook, cook_id = :cook_id",
+            ExpressionAttributeValues={
+                ":cook": user.model_dump(),
+                ":cook_id": user.user_id,
+            },
+        )
+    elif data.status == OrderStatus.dispatching:
+        orders.update_item(
+            Key={"tenant_id": tenant_id, "order_id": order_id},
+            UpdateExpression="SET dispatcher = :dispatcher, dispatcher_id = :dispatcher_id",
+            ExpressionAttributeValues={
+                ":dispatcher": user.model_dump(),
+                ":dispatcher_id": user.user_id,
+            },
+        )
+    elif data.status == OrderStatus.delivering:
+        orders.update_item(
+            Key={"tenant_id": tenant_id, "order_id": order_id},
+            UpdateExpression="SET driver = :driver, driver_id = :driver_id",
+            ExpressionAttributeValues={
+                ":driver": user.model_dump(),
+                ":driver_id": user.user_id,
+            },
+        )
+
     update_resp = orders.update_item(
         Key={"tenant_id": tenant_id, "order_id": order_id},
-        UpdateExpression="SET #s = :new_status",
+        UpdateExpression="""
+        SET #s = :status,
+            history = list_append(:entry, if_not_exists(history, :empty))
+        """,
         ExpressionAttributeNames={"#s": "status"},
-        ExpressionAttributeValues={":new_status": data.status},
+        ExpressionAttributeValues={
+            ":status": data.status,
+            ":entry": [
+                OrderHistoryEntry(
+                    user=user,
+                    status=data.status,
+                    date=datetime.now(timezone.utc).isoformat(),
+                ).model_dump()
+            ],
+            ":empty": [],
+        },
         ReturnValues="ALL_NEW",
     )
 
