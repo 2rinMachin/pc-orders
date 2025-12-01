@@ -3,12 +3,12 @@ import os
 import boto3
 from boto3.dynamodb.conditions import Attr, Key
 
-from common import table_name
+from common import resource_name
 from common.websocket import WEBSOCKET_ENDPOINT
 from schemas import Order, OrderSubscription, WebSocketMessage, WebSocketMessageKind
 
 dynamodb = boto3.resource("dynamodb")
-subscriptions = dynamodb.Table(table_name("ws-order-subscriptions"))
+subscriptions = dynamodb.Table(resource_name("ws-order-subscriptions"))
 api_gw = boto3.client("apigatewaymanagementapi", endpoint_url=WEBSOCKET_ENDPOINT)
 
 

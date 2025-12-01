@@ -61,6 +61,7 @@ class OrderHistoryEntry(BaseModel):
 class Order(BaseModel):
     tenant_id: str
     order_id: str
+    client_id: str
     client: AuthorizedUser
     items: list[OrderItem]
     status: OrderStatus

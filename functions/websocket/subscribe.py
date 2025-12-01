@@ -4,7 +4,7 @@ import boto3
 from boto3.dynamodb.conditions import Key
 from pydantic import BaseModel
 
-from common import parse_body, response, table_name
+from common import parse_body, resource_name, response
 from schemas import OrderSubscription, WebSocketMessage, WebSocketMessageKind
 
 
@@ -14,7 +14,7 @@ class SubscribeRequest(BaseModel):
 
 
 dynamodb = boto3.resource("dynamodb")
-subscriptions = dynamodb.Table(table_name("ws-order-subscriptions"))
+subscriptions = dynamodb.Table(resource_name("ws-order-subscriptions"))
 
 
 def handler(event, context):

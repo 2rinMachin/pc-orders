@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 import boto3
 from pydantic import BaseModel
 
-from common import PROJECT_NAME, parse_body, response, table_name, to_json
+from common import PROJECT_NAME, STAGE, parse_body, resource_name, response, to_json
 from schemas import AuthorizedUser, Order, OrderHistoryEntry, OrderStatus, UserRole
 
 dynamodb = boto3.resource("dynamodb")
@@ -43,7 +43,7 @@ def handler(event, context):
 
     assert data != None
 
-    orders = dynamodb.Table(table_name("orders"))
+    orders = dynamodb.Table(resource_name("orders"))
 
     resp = orders.get_item(Key={"tenant_id": tenant_id, "order_id": order_id})
     item: dict | None = resp.get("Item")
@@ -128,7 +128,7 @@ def handler(event, context):
     event_bridge.put_events(
         Entries=[
             {
-                "Source": f"{PROJECT_NAME}.orders",
+                "Source": f"{PROJECT_NAME}-{STAGE}.orders",
                 "DetailType": "order.status_updated",
                 "Detail": to_json(new_order),
             }

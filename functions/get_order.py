@@ -1,12 +1,12 @@
 import boto3
 
-from common import response, table_name
+from common import resource_name, response
 from schemas import FullOrder
 
 sfn = boto3.client("stepfunctions")
 dynamodb = boto3.resource("dynamodb")
 
-orders = dynamodb.Table(table_name("orders"))
+orders = dynamodb.Table(resource_name("orders"))
 
 
 def handler(event, context):

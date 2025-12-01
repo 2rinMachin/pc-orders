@@ -2,14 +2,14 @@ import os
 
 import boto3
 
-from common import table_name
+from common import resource_name
 from schemas import Order
 
 SFN_ARN = os.environ["AWS_SFN_ARN"]
 
 sfn = boto3.client("stepfunctions")
 dynamodb = boto3.resource("dynamodb")
-orders = dynamodb.Table(table_name("orders"))
+orders = dynamodb.Table(resource_name("orders"))
 
 
 def handler(event, context):

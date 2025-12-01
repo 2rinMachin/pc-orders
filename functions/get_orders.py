@@ -3,7 +3,7 @@ import json
 import boto3
 from boto3.dynamodb.conditions import Attr, Key
 
-from common import response, table_name, to_json
+from common import resource_name, response, to_json
 
 dynamodb = boto3.resource("dynamodb")
 
@@ -21,7 +21,7 @@ def handler(event, context):
     dispatcher_id = query.get("dispatcher_id")
     driver_id = query.get("driver_id")
 
-    orders = dynamodb.Table(table_name("orders"))
+    orders = dynamodb.Table(resource_name("orders"))
 
     if client_id != None:
         resp = orders.query(
@@ -30,7 +30,7 @@ def handler(event, context):
                 Key("tenant_id").eq(tenant_id) & Key("client_id").eq(client_id)
             ),
         )
-    if cook_id != None:
+    elif cook_id != None:
         resp = orders.query(
             IndexName="tenant-cook-idx",
             KeyConditionExpression=(

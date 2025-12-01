@@ -9,7 +9,7 @@ PROJECT_NAME = os.environ["PROJECT_NAME"]
 STAGE = os.environ["STAGE"]
 
 
-def table_name(basename: str) -> str:
+def resource_name(basename: str) -> str:
     return f"{PROJECT_NAME}-{STAGE}-{basename}"
 
 

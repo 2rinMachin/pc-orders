@@ -13,24 +13,12 @@ provider:
     AWS_APIGW_DOMAIN: "${env:AWS_APIGW_DOMAIN}"
     AWS_APIGW_STAGE: "${env:AWS_APIGW_STAGE}"
     AWS_SFN_ARN: "${env:AWS_SFN_ARN}"
+    ORDER_ARRIVALS_TOPIC_ARN: "${env:ORDER_ARRIVALS_TOPIC_ARN}"
 
 custom:
   pythonRequirements: {}
 
 functions:
-  get_statistics:
-    handler: "functions/get_statistics.handler"
-    events:
-      - http:
-          path: "/{tenant_id}/statistics"
-          method: "get"
-          cors: true
-          authorizer:
-            arn: "${env:AWS_AUTHENTICATE_USER_ARN}"
-            type: "request"
-            identitySource: "method.request.header.Authorization"
-            resultTtlInSeconds: 0
-
   put_order_task_token:
     handler: "functions/put_order_task_token.handler"
 
@@ -39,7 +27,7 @@ functions:
     events:
       - eventBridge:
           pattern:
-            source: ["${env:PROJECT_NAME}.orders"]
+            source: ["${env:PROJECT_NAME}-${env:STAGE}.orders"]
             detail-type: ["order.created"]
 
   resume_order_workflow:
@@ -47,7 +35,7 @@ functions:
     events:
       - eventBridge:
           pattern:
-            source: ["${env:PROJECT_NAME}.orders"]
+            source: ["${env:PROJECT_NAME}-${env:STAGE}.orders"]
             detail-type: ["order.status_updated"]
 
   broadcast_order_created:
@@ -55,7 +43,7 @@ functions:
     events:
       - eventBridge:
           pattern:
-            source: ["${env:PROJECT_NAME}.orders"]
+            source: ["${env:PROJECT_NAME}-${env:STAGE}.orders"]
             detail-type: ["order.created"]
 
   broadcast_order_status:
@@ -63,7 +51,7 @@ functions:
     events:
       - eventBridge:
           pattern:
-            source: ["${env:PROJECT_NAME}.orders"]
+            source: ["${env:PROJECT_NAME}-${env:STAGE}.orders"]
             detail-type: ["order.status_updated"]
 
   get_status:
@@ -144,3 +132,14 @@ functions:
       - websocket:
           route: "subscribe"
           routeResponseSelectionExpression: "$default"
+
+  notify_order_arrival:
+    handler: "functions/notify_order_arrival.handler"
+
+  subscribe_order_arrival:
+    handler: "functions/subscribe_order_arrival.handler"
+    events:
+      - eventBridge:
+          pattern:
+            source: ["${env:PROJECT_NAME}-${env:STAGE}.users"]
+            detail-type: ["user.created"]

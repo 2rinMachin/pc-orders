@@ -1,7 +1,7 @@
 import boto3
 from pydantic import BaseModel
 
-from common import table_name
+from common import resource_name
 
 
 class PutTaskTokenEvent(BaseModel):
@@ -11,7 +11,7 @@ class PutTaskTokenEvent(BaseModel):
 
 
 dynamodb = boto3.resource("dynamodb")
-orders = dynamodb.Table(table_name("orders"))
+orders = dynamodb.Table(resource_name("orders"))
 
 
 def handler(event, context):
