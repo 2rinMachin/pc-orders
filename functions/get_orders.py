@@ -27,31 +27,39 @@ def handler(event, context):
         resp = orders.query(
             IndexName="tenant-client-idx",
             KeyConditionExpression=(
-                Key("tenant_id").eq(tenant_id) & Key("client_id").eq(client_id)
+                Key("tenant_id").eq(tenant_id)
+                & Key("client_id#created_at").begins_with(f"{client_id}#")
             ),
+            ScanIndexForward=True,
         )
     elif cook_id != None:
         resp = orders.query(
             IndexName="tenant-cook-idx",
             KeyConditionExpression=(
-                Key("tenant_id").eq(tenant_id) & Key("cook_id").eq(cook_id)
+                Key("tenant_id").eq(tenant_id)
+                & Key("cook_id#created_at").begins_with(f"{cook_id}#")
             ),
+            ScanIndexForward=True,
             FilterExpression=Attr("status").begins_with(status),
         )
     elif dispatcher_id != None:
         resp = orders.query(
             IndexName="tenant-dispatcher-idx",
             KeyConditionExpression=(
-                Key("tenant_id").eq(tenant_id) & Key("dispatcher_id").eq(dispatcher_id)
+                Key("tenant_id").eq(tenant_id)
+                & Key("dispatcher_id#created_at").begins_with(f"{dispatcher_id}#")
             ),
+            ScanIndexForward=True,
             FilterExpression=Attr("status").begins_with(status),
         )
     elif driver_id != None:
         resp = orders.query(
             IndexName="tenant-driver-idx",
             KeyConditionExpression=(
-                Key("tenant_id").eq(tenant_id) & Key("driver_id").eq(driver_id)
+                Key("tenant_id").eq(tenant_id)
+                & Key("driver_id#created_at").begins_with(f"{driver_id}#")
             ),
+            ScanIndexForward=True,
             FilterExpression=Attr("status").begins_with(status),
         )
     elif last_key:

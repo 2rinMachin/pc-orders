@@ -64,14 +64,18 @@ def handler(event, context):
             )
         )
 
+    created_at = datetime.now(timezone.utc).isoformat()
+
     new_order = Order(
-        tenant_id=tenant_id,
-        order_id=str(uuid.uuid4()),
-        client_id=user.user_id,
-        client=user,
-        items=order_items,
-        status=OrderStatus.wait_for_cook,
-        created_at=datetime.now(timezone.utc).isoformat(),
+        **{
+            "tenant_id": tenant_id,
+            "order_id": str(uuid.uuid4()),
+            "client": user,
+            "items": order_items,
+            "status": OrderStatus.wait_for_cook,
+            "created_at": created_at,
+            "client_id#created_at": f"{user.user_id}#{created_at}",
+        },
     )
 
     orders.put_item(Item=new_order.model_dump(exclude_none=True))

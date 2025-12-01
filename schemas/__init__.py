@@ -2,7 +2,7 @@ from decimal import Decimal
 from enum import Enum
 from typing import Any, Optional
 
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class UserRole(str, Enum):
@@ -59,9 +59,11 @@ class OrderHistoryEntry(BaseModel):
 
 
 class Order(BaseModel):
+    model_config = {"serialize_by_alias": True}
+
     tenant_id: str
     order_id: str
-    client_id: str
+    client_id_created_at: str = Field(alias="client_id#created_at")
     client: AuthorizedUser
     items: list[OrderItem]
     status: OrderStatus
@@ -69,11 +71,15 @@ class Order(BaseModel):
     task_token: Optional[str] = None
     created_at: str
 
-    cook_id: Optional[str] = None
+    cook_id_created_at: Optional[str] = Field(default=None, alias="cook_id#created_at")
     cook: Optional[User] = None
-    dispatcher_id: Optional[str] = None
+    dispatcher_id_created_at: Optional[str] = Field(
+        default=None, alias="dispatcher_id#created_at"
+    )
     dispatcher: Optional[User] = None
-    driver_id: Optional[str] = None
+    driver_id_created_at: Optional[str] = Field(
+        default=None, alias="driver_id#created_at"
+    )
     driver: Optional[User] = None
 
     history: list[OrderHistoryEntry] = []

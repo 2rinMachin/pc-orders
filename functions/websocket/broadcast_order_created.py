@@ -12,7 +12,6 @@ api_gw = boto3.client("apigatewaymanagementapi", endpoint_url=WEBSOCKET_ENDPOINT
 
 def handler(event, context):
     order = Order(**event["detail"])
-
     message = WebSocketMessage(
         kind=WebSocketMessageKind.order_created,
         data=order.model_dump(),
@@ -32,10 +31,9 @@ def handler(event, context):
         try:
             sub = OrderSubscription(**item)
 
-            if sub.order_id == None or sub.order_id == order.order_id:
-                api_gw.post_to_connection(
-                    ConnectionId=sub.connection_id,
-                    Data=message_data,
-                )
+            api_gw.post_to_connection(
+                ConnectionId=sub.connection_id,
+                Data=message_data,
+            )
         except:
             pass

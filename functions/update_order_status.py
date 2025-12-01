@@ -77,28 +77,31 @@ def handler(event, context):
     if data.status == OrderStatus.cooking:
         orders.update_item(
             Key={"tenant_id": tenant_id, "order_id": order_id},
-            UpdateExpression="SET cook = :cook, cook_id = :cook_id",
+            UpdateExpression="SET cook = :cook, #idx = :cook_id",
+            ExpressionAttributeNames={"#idx": "cook_id#created_at"},
             ExpressionAttributeValues={
                 ":cook": user.model_dump(),
-                ":cook_id": user.user_id,
+                ":cook_id": f"{user.user_id}#{order.created_at}",
             },
         )
     elif data.status == OrderStatus.dispatching:
         orders.update_item(
             Key={"tenant_id": tenant_id, "order_id": order_id},
-            UpdateExpression="SET dispatcher = :dispatcher, dispatcher_id = :dispatcher_id",
+            UpdateExpression="SET dispatcher = :dispatcher, #idx = :dispatcher_id",
+            ExpressionAttributeNames={"#idx": "dispatcher_id#created_at"},
             ExpressionAttributeValues={
                 ":dispatcher": user.model_dump(),
-                ":dispatcher_id": user.user_id,
+                ":dispatcher_id": f"{user.user_id}#{order.created_at}",
             },
         )
     elif data.status == OrderStatus.delivering:
         orders.update_item(
             Key={"tenant_id": tenant_id, "order_id": order_id},
-            UpdateExpression="SET driver = :driver, driver_id = :driver_id",
+            UpdateExpression="SET driver = :driver, #idx = :driver_id",
+            ExpressionAttributeNames={"#idx": "driver_id#created_at"},
             ExpressionAttributeValues={
                 ":driver": user.model_dump(),
-                ":driver_id": user.user_id,
+                ":driver_id": f"{user.user_id}#{order.created_at}",
             },
         )
 
