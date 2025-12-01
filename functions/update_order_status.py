@@ -57,9 +57,8 @@ def handler(event, context):
     required_status = STATUS_REQUIREMENTS.get(data.status)
     required_role = ROLE_REQUIREMENTS.get(data.status)
 
-    # TODO: uncomment when ready
-    # if required_role != None and required_role != user.role:
-    #     return response(403, {"message": "Forbidden."})
+    if required_role != None and required_role != user.role:
+        return response(403, {"message": "Forbidden."})
 
     if required_status == None:
         return response(
