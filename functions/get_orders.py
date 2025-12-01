@@ -62,11 +62,19 @@ def handler(event, context):
             ScanIndexForward=True,
             FilterExpression=Attr("status").begins_with(status),
         )
+    elif status:
+        resp = orders.query(
+            IndexName="tenant-status-idx",
+            KeyConditionExpression=(
+                Key("tenant_id").eq(tenant_id)
+                & Key("status#created_at").begins_with(f"{status}#")
+            ),
+            ScanIndexForward=True,
+        )
     elif last_key:
         resp = orders.query(
             IndexName="tenant-created-at-idx",
             KeyConditionExpression=Key("tenant_id").eq(tenant_id),
-            FilterExpression=Attr("status").begins_with(status),
             ScanIndexForward=True,
             ExclusiveStartKey=last_key,
             Limit=limit,
@@ -75,7 +83,6 @@ def handler(event, context):
         resp = orders.query(
             IndexName="tenant-created-at-idx",
             KeyConditionExpression=Key("tenant_id").eq(tenant_id),
-            FilterExpression=Attr("status").begins_with(status),
             ScanIndexForward=True,
             Limit=limit,
         )

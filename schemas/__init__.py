@@ -2,7 +2,7 @@ from decimal import Decimal
 from enum import Enum
 from typing import Any, Optional
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, Field
 
 
 class UserRole(str, Enum):
@@ -66,9 +66,10 @@ class Order(BaseModel):
     client_id_created_at: str = Field(alias="client_id#created_at")
     client: AuthorizedUser
     items: list[OrderItem]
-    status: OrderStatus
     execution_arn: Optional[str] = None
     task_token: Optional[str] = None
+    status: OrderStatus
+    status_created_at: str = Field(alias="status#created_at")
     created_at: str
 
     cook_id_created_at: Optional[str] = Field(default=None, alias="cook_id#created_at")

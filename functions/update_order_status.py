@@ -109,11 +109,13 @@ def handler(event, context):
         Key={"tenant_id": tenant_id, "order_id": order_id},
         UpdateExpression="""
         SET #s = :status,
+            #sc = :status_created_at,
             history = list_append(:entry, if_not_exists(history, :empty))
         """,
-        ExpressionAttributeNames={"#s": "status"},
+        ExpressionAttributeNames={"#s": "status", "#sc": "status#created_at"},
         ExpressionAttributeValues={
             ":status": data.status,
+            ":status_created_at": f"{data.status.name}#{order.created_at}",
             ":entry": [
                 OrderHistoryEntry(
                     user=user,

@@ -73,6 +73,7 @@ def handler(event, context):
             "client": user,
             "items": order_items,
             "status": OrderStatus.wait_for_cook,
+            "status#created_at": f"{OrderStatus.wait_for_cook.name}#{created_at}",
             "created_at": created_at,
             "client_id#created_at": f"{user.user_id}#{created_at}",
         },

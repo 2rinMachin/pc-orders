@@ -32,11 +32,11 @@ def handler(event, context):
             TopicArn=TOPIC_ARN,
             Subject="¡Tu pedido ha llegado!",
             Message=f"""
-            Tu pedido ya está en tu puerta.
+Tu pedido ya está en tu puerta.
 
-            Resumen del pedido:
-            {"\n".join(order_items)}
-            """,
+Resumen del pedido:
+{"\n".join(order_items)}
+""",
             MessageAttributes={
                 "tenant_id": {
                     "DataType": "String",
